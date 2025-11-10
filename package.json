@@ -1,0 +1,50 @@
+{
+  "name": "@watchapi/cli",
+  "version": "0.1.0",
+  "description": "CLI tool for API monitoring and regression detection in CI/CD pipelines",
+  "main": "dist/index.js",
+  "bin": {
+    "watchapi": "dist/cli.js"
+  },
+  "type": "module",
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": [
+    "api",
+    "monitoring",
+    "testing",
+    "ci-cd",
+    "regression"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/api-monitoring.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://github.com/yourusername/api-monitoring#readme",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "dependencies": {
+    "commander": "^12.1.0",
+    "chalk": "^5.3.0",
+    "ora": "^8.0.1",
+    "axios": "^1.7.2",
+    "dotenv": "^16.4.5",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "tsup": "^8.1.0",
+    "typescript": "^5.4.5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
