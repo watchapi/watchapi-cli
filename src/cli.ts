@@ -2,8 +2,11 @@
 
 import { Command } from "commander";
 import { config } from "dotenv";
-import { checkCommand } from "./commands/check.js";
+import { DEFAULT_API_URL, loadAuthConfig } from "./auth-config.js";
 import { analyzeCommand } from "./commands/analyze.js";
+import { checkCommand } from "./commands/check.js";
+import { loginCommand } from "./commands/login.js";
+import { logoutCommand } from "./commands/logout.js";
 
 // Load .env file
 config();
@@ -56,23 +59,24 @@ program
     "Environment name (e.g., production, staging)",
     "production",
   )
-  .option(
-    "--api-url <url>",
-    "API platform URL",
-    process.env.WATCHAPI_URL || "https://api-monitoring.example.com",
-  )
-  .option(
-    "--api-token <token>",
-    "API authentication token",
-    process.env.WATCHAPI_TOKEN || "",
-  )
+  .option("--api-url <url>", "API platform URL")
+  .option("--api-token <token>", "API authentication token")
   .option(
     "--fail-on <mode>",
     "When to fail the CI/CD pipeline (any|regressions)",
     "regressions",
   )
   .action(async (options) => {
-    if (!options.apiToken) {
+    const storedAuth = loadAuthConfig();
+    const apiUrl =
+      options.apiUrl ||
+      process.env.NEXT_PUBLIC_DOMAIN ||
+      storedAuth?.apiUrl ||
+      DEFAULT_API_URL;
+    const apiToken =
+      options.apiToken || process.env.WATCHAPI_TOKEN || storedAuth?.apiToken;
+
+    if (!apiToken) {
       console.error(
         "Error: API token is required. Set WATCHAPI_TOKEN env var or use --api-token",
       );
@@ -82,10 +86,29 @@ program
     await checkCommand({
       collection: options.collection,
       env: options.env,
-      apiUrl: options.apiUrl,
-      apiToken: options.apiToken,
+      apiUrl,
+      apiToken,
       failOn: options.failOn as "any" | "regressions",
     });
+  });
+
+program
+  .command("login")
+  .description("Save credentials locally for reuse")
+  .option("--api-token <token>", "API authentication token")
+  .option("--api-url <url>", "API platform URL")
+  .action(async (options) => {
+    await loginCommand({
+      apiToken: options.apiToken,
+      apiUrl: options.apiUrl,
+    });
+  });
+
+program
+  .command("logout")
+  .description("Remove locally saved credentials")
+  .action(async () => {
+    await logoutCommand();
   });
 
 program.parse();

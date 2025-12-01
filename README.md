@@ -12,7 +12,15 @@ npx @watchapi/cli
 
 ## Quick Start
 
-### 1. Set up environment variables
+### 1. Log in once (recommended)
+
+```bash
+watchapi login --api-token your-api-token --api-url https://your-platform.com
+```
+
+This stores credentials in `~/.watchapi/config.json` for reuse.
+
+### 2. Or set environment variables
 
 ```bash
 export WATCHAPI_TOKEN="your-api-token"
@@ -26,13 +34,29 @@ WATCHAPI_TOKEN=your-api-token
 WATCHAPI_URL=https://your-platform.com
 ```
 
-### 2. Run checks in your CI/CD pipeline
+### 3. Run checks in your CI/CD pipeline
 
 ```bash
 watchapi check --collection <collection-id> --env production
 ```
 
 ## Usage
+
+### Login Command
+
+Store credentials locally so you can skip passing tokens on every run.
+
+```bash
+watchapi login --api-token <token> [--api-url <url>]
+```
+
+### Logout Command
+
+Remove locally saved credentials.
+
+```bash
+watchapi logout
+```
 
 ### Check Command
 
@@ -46,8 +70,8 @@ watchapi check [options]
 
 - `-c, --collection <id>` - **(Required)** Collection ID to check
 - `-e, --env <environment>` - Environment name (default: "production")
-- `--api-url <url>` - Platform API URL (default: from WATCHAPI_URL env var)
-- `--api-token <token>` - API authentication token (default: from WATCHAPI_TOKEN env var)
+- `--api-url <url>` - Platform API URL (default: flag → `WATCHAPI_URL` → saved login → production URL)
+- `--api-token <token>` - API authentication token (default: flag → `WATCHAPI_TOKEN` → saved login)
 - `--fail-on <mode>` - When to fail the CI/CD pipeline:
   - `regressions` (default) - Fail only if regressions detected
   - `any` - Fail if any check fails
