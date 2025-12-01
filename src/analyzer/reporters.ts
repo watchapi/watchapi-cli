@@ -3,15 +3,6 @@ import chalk from "chalk";
 
 import type { AnalyzerIssue, AnalyzerResult } from "./types.js";
 
-const APP_BASE_URL =
-  (process.env.WATCHAPI_APP_URL ||
-    process.env.NEXT_PUBLIC_APP_URL ||
-    "http://localhost:3000")
-    .replace(/\/$/, "");
-
-const REPORT_VIEWER_URL =
-  process.env.WATCHAPI_REPORT_URL || `${APP_BASE_URL}/analyzer/report`;
-
 export function printReport(
   result: AnalyzerResult,
   format: "table" | "json" = "table",
@@ -36,8 +27,6 @@ export function printReport(
   );
 
   renderTable(result.issues);
-
-  console.log(chalk.dim(`View in browser: ${REPORT_VIEWER_URL}`));
 
   const { info, warn, error } = result.summary;
   console.log(chalk.dim(`info: ${info}  warn: ${warn}  error: ${error}`));
