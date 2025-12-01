@@ -2,6 +2,7 @@ export { ApiClient } from "./api-client.js";
 export { EndpointChecker } from "./checker.js";
 export { Reporter } from "./reporter.js";
 export { checkCommand } from "./commands/check.js";
+export { analyzeCommand } from "./commands/analyze.js";
 export type {
   EndpointDefinition,
   Collection,
