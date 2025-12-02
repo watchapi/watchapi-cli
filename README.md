@@ -205,7 +205,7 @@ The CLI automatically detects regressions by comparing current results with hist
 
 ### When using `--fail-on any`
 
-- [x] Any failure or error: **Blocks deployment**
+- [ ] Any failure or error: **Blocks deployment**
 
 ## Output Example
 
