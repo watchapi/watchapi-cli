@@ -1,6 +1,14 @@
-# @watchapi/cli
+# API Monitoring & tRPC Analyzer CLI
+
+[![license](https://img.shields.io/npm/l/@watchapi/cli.svg)](https://github.com/yourusername/api-monitoring/blob/main/LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
+[![Made for CI/CD](https://img.shields.io/badge/Made%20for-CI%2FCD-success.svg)]()
+[![npm version](https://img.shields.io/npm/v/@watchapi/cli.svg)](https://www.npmjs.com/package/@watchapi/cli)
+[![npm downloads](https://img.shields.io/npm/dm/@watchapi/cli.svg)](https://www.npmjs.com/package/@watchapi/cli)
 
 CLI tool for API monitoring and regression detection in CI/CD pipelines.
+
+![watchapi CLI report table with validation info](./public/readme-screenshot.png)
 
 ## Installation
 
@@ -193,21 +201,25 @@ pipeline {
 The CLI automatically detects regressions by comparing current results with historical data:
 
 ### Status Regressions
+
 - Endpoint was passing in last 3 checks → now failing
 - Example: API returned 200 OK, now returns 500 Error
 
 ### Performance Regressions
+
 - Response time is 2x slower than 5-check average
 - Example: Average 100ms → now 250ms
 
 ### When using `--fail-on regressions`
-- ✅ New endpoint fails: Won't block deployment (no baseline)
-- ✅ Endpoint consistently failing: Won't block (not a regression)
-- ❌ Previously passing endpoint fails: **Blocks deployment**
-- ❌ Performance degradation (2x slower): **Blocks deployment**
+
+- [v] New endpoint fails: Won't block deployment (no baseline)
+- [v] Endpoint consistently failing: Won't block (not a regression)
+- [x] Previously passing endpoint fails: **Blocks deployment**
+- [x] Performance degradation (2x slower): **Blocks deployment**
 
 ### When using `--fail-on any`
-- ❌ Any failure or error: **Blocks deployment**
+
+- [x] Any failure or error: **Blocks deployment**
 
 ## Output Example
 
@@ -249,19 +261,22 @@ Get your API token from the platform:
 ## Troubleshooting
 
 ### "API token is required"
+
 - Set `WATCHAPI_TOKEN` environment variable
 - Or use `--api-token` flag
 
 ### "Collection not found"
+
 - Verify collection ID is correct
 - Ensure your API token has access to the collection
 
 ### Checks timing out
+
 - Increase timeout in endpoint configuration on the platform
 - Check network connectivity from CI/CD to your APIs
 
 ## Support
 
-- Documentation: https://docs.watchapi.com
-- Issues: https://github.com/yourusername/watchapi/issues
-- Email: support@watchapi.com
+- Documentation: https://watchapi.dev/docs
+- Issues: https://github.com/watchapi/watchapi-cli/issues
+- Email: support@watchapi.dev
