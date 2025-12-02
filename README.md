@@ -48,6 +48,25 @@ WATCHAPI_URL=https://your-platform.com
 watchapi check --collection <collection-id> --env production
 ```
 
+## Analyzer-Only (tRPC) Quick Start
+
+Need just the static analyzer? It works standalone—no account or token required.
+
+```bash
+# Scan your project (table view)
+watchapi analyze --root . --tsconfig tsconfig.json --include "src/server/**/*.ts"
+
+# JSON output for CI/pipelines
+watchapi analyze --format json > trpc-analyzer-report.json
+```
+
+**Key flags:**
+- `--root` (default: cwd) project root to scan
+- `--tsconfig` path to the tsconfig used by your tRPC project
+- `--include` glob(s) to target router/procedure files
+- `--format table|json` choose console table or machine-readable JSON
+- `--router-factory` / `--router-identifier-pattern` override router detection if you use custom helpers
+
 ## Usage
 
 ### Login Command
