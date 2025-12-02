@@ -198,14 +198,14 @@ The CLI automatically detects regressions by comparing current results with hist
 
 ### When using `--fail-on regressions`
 
-- [x] New endpoint fails: Won't block deployment (no baseline)
-- [x] Endpoint consistently failing: Won't block (not a regression)
-- [ ] Previously passing endpoint fails: **Blocks deployment**
-- [ ] Performance degradation (2x slower): **Blocks deployment**
+- [✓] New endpoint fails: Won't block deployment (no baseline)
+- [✓] Endpoint consistently failing: Won't block (not a regression)
+- [✗] Previously passing endpoint fails: **Blocks deployment**
+- [✗] Performance degradation (2x slower): **Blocks deployment**
 
 ### When using `--fail-on any`
 
-- [ ] Any failure or error: **Blocks deployment**
+- [✗] Any failure or error: **Blocks deployment**
 
 ## Output Example
 
