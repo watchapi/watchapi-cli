@@ -86,6 +86,24 @@ watchapi check --collection abc123 --fail-on any
 watchapi check --collection abc123 --api-url https://api.example.com
 ```
 
+### Push Command
+
+Discover APIs from your codebase (tRPC for now) and push them to the platform.
+
+```bash
+watchapi push --root . --tsconfig tsconfig.json
+```
+
+**Options:**
+
+- `-t, --target <target>` - Adapter target (default: `trpc`)
+- `--root <path>` - Project root to scan (default: cwd)
+- `--tsconfig <path>` - Path to tsconfig (default: `tsconfig.json`)
+- `--include <globs...>` - Override glob(s) for router files
+- `--api-url <url>` / `--api-token <token>` - Override platform connection
+- `--dry-run` - Print detected APIs without pushing
+- `--router-factory` / `--router-identifier-pattern` - Customize tRPC detection
+
 ## CI/CD Integration
 
 ### GitHub Actions

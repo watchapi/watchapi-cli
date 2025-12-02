@@ -1,27 +1,40 @@
-import axios, { AxiosInstance } from "axios";
-import type { Collection, Report } from "./types.js";
+import { createTRPCClient, httpBatchLink } from "@trpc/client";
+import type { Collection, PushPayload, Report } from "./types.js";
+
+type TrpcClient = {
+  query: (path: string, input?: unknown) => Promise<any>;
+  mutation: (path: string, input?: unknown) => Promise<any>;
+};
 
 export class ApiClient {
-  private client: AxiosInstance;
+  private client: TrpcClient;
 
   constructor(apiUrl: string, apiToken: string) {
-    this.client = axios.create({
-      baseURL: apiUrl,
-      headers: {
-        Authorization: `Bearer ${apiToken}`,
-        "Content-Type": "application/json",
-      },
-      timeout: 30000,
-    });
+    const url = new URL("/api/trpc", apiUrl).toString();
+
+    this.client = createTRPCClient({
+      links: [
+        httpBatchLink({
+          url,
+          headers: () => ({
+            authorization: `Bearer ${apiToken}`,
+          }),
+        }),
+      ],
+    }) as unknown as TrpcClient;
   }
 
   async getCollection(collectionId: string): Promise<Collection> {
-    const response = await this.client.get(`/api/cli/collections/${collectionId}`);
-    return response.data;
+    return this.client.query("cli.getCollection", { collectionId });
   }
 
   async submitReport(report: Report): Promise<{ success: boolean; regressions: string[] }> {
-    const response = await this.client.post("/api/cli/report", report);
-    return response.data;
+    return this.client.mutation("cli.submitReport", report);
+  }
+
+  async pushApis(
+    payload: PushPayload,
+  ): Promise<{ success: boolean; created: number; updated: number; skipped: number; message?: string }> {
+    return this.client.mutation("cli.pushApis", payload);
   }
 }

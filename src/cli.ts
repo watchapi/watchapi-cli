@@ -7,6 +7,7 @@ import { analyzeCommand } from "./commands/analyze.js";
 import { checkCommand } from "./commands/check.js";
 import { loginCommand } from "./commands/login.js";
 import { logoutCommand } from "./commands/logout.js";
+import { pushCommand } from "./commands/push.js";
 
 // Load .env file
 config();
@@ -109,6 +110,40 @@ program
   .description("Remove locally saved credentials")
   .action(async () => {
     await logoutCommand();
+  });
+
+program
+  .command("push")
+  .description("Push API surface from code to the monitoring platform")
+  .option("-t, --target <target>", "Adapter target", "trpc")
+  .option("--root <path>", "Project root to scan", process.cwd())
+  .option("--tsconfig <path>", "Path to tsconfig", "tsconfig.json")
+  .option("--include <globs...>", "Glob(s) for router files")
+  .option("--api-url <url>", "API platform URL")
+  .option("--api-token <token>", "API authentication token")
+  .option("--dry-run", "Print detected APIs without pushing", false)
+  .option("-v, --verbose", "Enable verbose logging", false)
+  .option(
+    "--router-factory <names...>",
+    "Router factory identifiers to detect (comma separated or repeat flag)",
+  )
+  .option(
+    "--router-identifier-pattern <regex>",
+    "Regex to detect router identifiers (default: /router$/i)",
+  )
+  .action(async (options) => {
+    await pushCommand({
+      target: options.target,
+      root: options.root,
+      tsconfig: options.tsconfig,
+      include: options.include,
+      apiUrl: options.apiUrl,
+      apiToken: options.apiToken,
+      dryRun: options.dryRun,
+      verbose: options.verbose,
+      routerFactory: options.routerFactory,
+      routerIdentifierPattern: options.routerIdentifierPattern,
+    });
   });
 
 program.parse();

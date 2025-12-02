@@ -12,6 +12,7 @@ export { checkCommand } from "./commands/check.js";
 export { analyzeCommand } from "./commands/analyze.js";
 export { loginCommand } from "./commands/login.js";
 export { logoutCommand } from "./commands/logout.js";
+export { pushCommand } from "./commands/push.js";
 export type {
   EndpointDefinition,
   Collection,
