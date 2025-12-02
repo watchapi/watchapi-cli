@@ -281,6 +281,10 @@ npx @watchapi/cli analyze --format json > trpc-analyzer-report.json
 - `--format table|json` choose console table or machine-readable JSON
 - `--router-factory` / `--router-identifier-pattern` override router detection if you use custom helpers
 
+## Contributing
+
+See `CONTRIBUTING.md` for a minimal setup and workflow guide.
+
 ## Support
 
 - Documentation: https://watchapi.dev/docs
