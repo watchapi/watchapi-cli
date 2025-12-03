@@ -1,5 +1,5 @@
 import { createTRPCUntypedClient, httpBatchLink } from "@trpc/client";
-import type { Collection, PushPayload, Report } from "./types.js";
+import type { Collection, Report, SyncPayload } from "./types.js";
 
 type TrpcClient = {
   query: (path: string, input?: unknown) => Promise<any>;
@@ -32,9 +32,16 @@ export class ApiClient {
     return this.client.mutation("cli.submitReport", report);
   }
 
-  async pushApis(
-    payload: PushPayload,
-  ): Promise<{ success: boolean; created: number; updated: number; skipped: number; message?: string }> {
-    return this.client.mutation("cli.pushApis", payload);
+  async syncApis(
+    payload: SyncPayload,
+  ): Promise<{
+    success: boolean;
+    created: number;
+    updated: number;
+    deactivated: number;
+    unchanged: number;
+    message?: string;
+  }> {
+    return this.client.mutation("cli.syncApis", payload);
   }
 }

@@ -7,9 +7,9 @@ import { ApiClient } from "../api-client.js";
 import { DEFAULT_API_URL, loadAuthConfig } from "../auth-config.js";
 import { runAnalyzer } from "../analyzer/index.js";
 import type { AnalyzerTarget, TrpcProcedureNode } from "../analyzer/types.js";
-import type { PushApiDefinition } from "../types.js";
+import type { SyncApiDefinition } from "../types.js";
 
-export interface PushCommandOptions {
+export interface SyncCommandOptions {
   target?: AnalyzerTarget;
   root?: string;
   tsconfig?: string;
@@ -24,7 +24,7 @@ export interface PushCommandOptions {
   routerIdentifierPattern?: string;
 }
 
-export async function pushCommand(options: PushCommandOptions): Promise<void> {
+export async function syncCommand(options: SyncCommandOptions): Promise<void> {
   const target: AnalyzerTarget = options.target ?? "trpc";
   const rootDir = path.resolve(options.root ?? process.cwd());
   const storedAuth = loadAuthConfig();
@@ -74,7 +74,7 @@ export async function pushCommand(options: PushCommandOptions): Promise<void> {
     }
 
     if (options.dryRun) {
-      console.log(chalk.gray("Dry run enabled - not pushing to platform"));
+      console.log(chalk.gray("Dry run enabled - not syncing with platform"));
       console.table(
         apis.map((api) => ({
           id: api.id,
@@ -88,25 +88,27 @@ export async function pushCommand(options: PushCommandOptions): Promise<void> {
 
     const apiClient = new ApiClient(apiUrl, apiToken);
     if (spinner) {
-      spinner.start("Pushing APIs to monitoring platform...");
+      spinner.start("Syncing APIs with monitoring platform...");
     } else {
-      console.log("Pushing APIs to monitoring platform...");
+      console.log("Syncing APIs with monitoring platform...");
     }
 
-    const result = await apiClient.pushApis({
+    const result = await apiClient.syncApis({
       target,
       apis,
       metadata: { rootDir },
     });
 
-    const pushMsg = `Push completed (created: ${
-      result.created ?? 0
-    }, updated: ${result.updated ?? 0}, skipped: ${result.skipped ?? 0})`;
+    const syncMsg = `Sync completed (created: ${result.created ?? 0}, updated: ${
+      result.updated ?? 0
+    }, unchanged: ${result.unchanged ?? 0}, deactivated: ${
+      result.deactivated ?? 0
+    } [active state untouched])`;
 
     if (spinner) {
-      spinner.succeed(pushMsg);
+      spinner.succeed(syncMsg);
     } else {
-      console.log(pushMsg);
+      console.log(syncMsg);
     }
 
     if (result.message) {
@@ -114,7 +116,7 @@ export async function pushCommand(options: PushCommandOptions): Promise<void> {
     }
   } catch (error) {
     if (spinner) {
-      spinner.fail("Push failed");
+      spinner.fail("Sync failed");
     }
 
     console.error(
@@ -129,19 +131,19 @@ function buildApiDefinitions(
   nodes: TrpcProcedureNode[],
   prefix: string | undefined,
   domain: string,
-): PushApiDefinition[] {
+): SyncApiDefinition[] {
   if (target === "trpc") {
     return buildTrpcApiDefinitions(nodes, prefix, domain);
   }
 
-  throw new Error(`Unsupported push target: ${target}`);
+  throw new Error(`Unsupported sync target: ${target}`);
 }
 
 function buildTrpcApiDefinitions(
   nodes: TrpcProcedureNode[],
   prefix: string | undefined,
   domain: string,
-): PushApiDefinition[] {
+): SyncApiDefinition[] {
   return nodes.map((node) => {
     const operationId = `${node.router}.${node.procedure}`;
     const path = buildFullPath(operationId, prefix, domain);

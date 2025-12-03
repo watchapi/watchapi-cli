@@ -53,7 +53,7 @@ export const reportSchema = z.object({
   timestamp: z.string(),
 });
 
-export const pushApiDefinitionSchema = z.object({
+export const syncApiDefinitionSchema = z.object({
   id: z.string(),
   name: z.string(),
   method: z.string(),
@@ -66,9 +66,9 @@ export const pushApiDefinitionSchema = z.object({
   metadata: z.record(z.unknown()).optional(),
 });
 
-export const pushPayloadSchema = z.object({
+export const syncPayloadSchema = z.object({
   target: z.string(),
-  apis: z.array(pushApiDefinitionSchema),
+  apis: z.array(syncApiDefinitionSchema),
   metadata: z.record(z.unknown()).optional(),
 });
 
@@ -76,5 +76,5 @@ export type EndpointDefinition = z.infer<typeof endpointDefinitionSchema>;
 export type Collection = z.infer<typeof collectionSchema>;
 export type CheckResult = z.infer<typeof checkResultSchema>;
 export type Report = z.infer<typeof reportSchema>;
-export type PushApiDefinition = z.infer<typeof pushApiDefinitionSchema>;
-export type PushPayload = z.infer<typeof pushPayloadSchema>;
+export type SyncApiDefinition = z.infer<typeof syncApiDefinitionSchema>;
+export type SyncPayload = z.infer<typeof syncPayloadSchema>;
