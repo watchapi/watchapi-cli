@@ -91,7 +91,7 @@ watchapi check --collection abc123 --api-url https://api.example.com
 Discover APIs from your codebase (tRPC for now) and push them to the platform.
 
 ```bash
-watchapi push --root . --tsconfig tsconfig.json
+watchapi push --root . --tsconfig tsconfig.json --domain https://api.example.com --prefix api/trpc
 ```
 
 **Options:**
@@ -100,6 +100,8 @@ watchapi push --root . --tsconfig tsconfig.json
 - `--root <path>` - Project root to scan (default: cwd)
 - `--tsconfig <path>` - Path to tsconfig (default: `tsconfig.json`)
 - `--include <globs...>` - Override glob(s) for router files
+- `--domain <url>` - **(Required)** Base domain to prepend to pushed endpoint paths
+- `--prefix <path>` - Optional path prefix before the router/procedure (e.g., `api/trpc`)
 - `--api-url <url>` / `--api-token <token>` - Override platform connection
 - `--dry-run` - Print detected APIs without pushing
 - `--router-factory` / `--router-identifier-pattern` - Customize tRPC detection
