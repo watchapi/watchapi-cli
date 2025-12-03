@@ -14,6 +14,8 @@ export interface PushCommandOptions {
   root?: string;
   tsconfig?: string;
   include?: string[];
+  prefix?: string;
+  domain: string;
   apiUrl?: string;
   apiToken?: string;
   dryRun?: boolean;
@@ -55,8 +57,15 @@ export async function pushCommand(options: PushCommandOptions): Promise<void> {
       routerIdentifierPattern: options.routerIdentifierPattern,
     });
 
-    const apis = buildApiDefinitions(target, analysis.nodes);
-    const foundMsg = `Found ${apis.length} API${apis.length === 1 ? "" : "s"} from ${target}`;
+    const apis = buildApiDefinitions(
+      target,
+      analysis.nodes,
+      options.prefix,
+      options.domain,
+    );
+    const foundMsg = `Found ${apis.length} API${
+      apis.length === 1 ? "" : "s"
+    } from ${target}`;
 
     if (spinner) {
       spinner.succeed(foundMsg);
@@ -90,7 +99,9 @@ export async function pushCommand(options: PushCommandOptions): Promise<void> {
       metadata: { rootDir },
     });
 
-    const pushMsg = `Push completed (created: ${result.created ?? 0}, updated: ${result.updated ?? 0}, skipped: ${result.skipped ?? 0})`;
+    const pushMsg = `Push completed (created: ${
+      result.created ?? 0
+    }, updated: ${result.updated ?? 0}, skipped: ${result.skipped ?? 0})`;
 
     if (spinner) {
       spinner.succeed(pushMsg);
@@ -116,9 +127,11 @@ export async function pushCommand(options: PushCommandOptions): Promise<void> {
 function buildApiDefinitions(
   target: AnalyzerTarget,
   nodes: TrpcProcedureNode[],
+  prefix: string | undefined,
+  domain: string,
 ): PushApiDefinition[] {
   if (target === "trpc") {
-    return buildTrpcApiDefinitions(nodes);
+    return buildTrpcApiDefinitions(nodes, prefix, domain);
   }
 
   throw new Error(`Unsupported push target: ${target}`);
@@ -126,16 +139,19 @@ function buildApiDefinitions(
 
 function buildTrpcApiDefinitions(
   nodes: TrpcProcedureNode[],
+  prefix: string | undefined,
+  domain: string,
 ): PushApiDefinition[] {
   return nodes.map((node) => {
     const operationId = `${node.router}.${node.procedure}`;
+    const path = buildFullPath(operationId, prefix, domain);
     return {
       id: operationId,
       name: operationId,
       method: node.method === "query" ? "GET" : "POST",
       router: node.router,
       procedure: node.procedure,
-      path: operationId,
+      path,
       visibility: node.procedureType,
       file: node.file,
       line: node.line,
@@ -147,4 +163,14 @@ function buildTrpcApiDefinitions(
       },
     };
   });
+}
+
+function buildFullPath(path: string, prefix: string | undefined, domain: string) {
+  const cleanDomain = domain.replace(/\/+$/, "");
+  const cleanPrefix = prefix ? prefix.replace(/^\/+|\/+$/g, "") : "";
+  const cleanPath = path.replace(/^\/+/, "");
+  const segments = [cleanDomain];
+  if (cleanPrefix) segments.push(cleanPrefix);
+  segments.push(cleanPath);
+  return segments.join("/");
 }

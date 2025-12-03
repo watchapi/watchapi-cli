@@ -119,6 +119,11 @@ program
   .option("--root <path>", "Project root to scan", process.cwd())
   .option("--tsconfig <path>", "Path to tsconfig", "tsconfig.json")
   .option("--include <globs...>", "Glob(s) for router files")
+  .option("--prefix <path>", "Optional path prefix to prepend to pushed endpoints")
+  .requiredOption(
+    "--domain <url>",
+    "Base domain to prepend to pushed endpoints (e.g. https://api.example.com)",
+  )
   .option("--api-url <url>", "API platform URL")
   .option("--api-token <token>", "API authentication token")
   .option("--dry-run", "Print detected APIs without pushing", false)
@@ -137,6 +142,8 @@ program
       root: options.root,
       tsconfig: options.tsconfig,
       include: options.include,
+      prefix: options.prefix,
+      domain: options.domain,
       apiUrl: options.apiUrl,
       apiToken: options.apiToken,
       dryRun: options.dryRun,
