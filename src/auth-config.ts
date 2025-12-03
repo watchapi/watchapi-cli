@@ -9,7 +9,8 @@ export interface AuthConfig {
 
 const CONFIG_DIR = path.join(os.homedir(), ".watchapi");
 const CONFIG_PATH = path.join(CONFIG_DIR, "config.json");
-export const DEFAULT_API_URL = "https://api-monitoring.example.com";
+// Default to the public WatchAPI SaaS domain so CLI commands work out of the box
+export const DEFAULT_API_URL = "https://watchapi.dev";
 
 export function loadAuthConfig(): AuthConfig | null {
   try {
