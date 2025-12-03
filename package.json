@@ -1,6 +1,6 @@
 {
   "name": "@watchapi/cli",
-  "version": "0.2.1",
+  "version": "0.2.6",
   "description": "CLI tool for API monitoring and regression detection in CI/CD pipelines",
   "main": "dist/index.js",
   "bin": {
@@ -13,7 +13,8 @@
     "dev": "npm-run-all -p dev:build dev:run",
     "start": "node dist/cli.js",
     "dev:run": "nodemon dist/cli.js",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "prepublishOnly": "pnpm build"
   },
   "keywords": [
     "api",
