@@ -35,4 +35,5 @@ export async function loginCommand(options: LoginOptions): Promise<void> {
   console.log(
     `Credentials saved to ${getAuthConfigPath()}. They will be used when flags or env vars are missing.`,
   );
+  console.log(`API URL: ${apiUrl}`);
 }
