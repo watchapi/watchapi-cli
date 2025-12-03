@@ -64,14 +64,25 @@ export async function analyzeTrpc(
   const nodes: TrpcProcedureNode[] = [];
   const routers: TrpcRouterMeta[] = [];
   const detection = buildRouterDetectionConfig(options, debug);
+  const routerMounts: RouterMountEdge[] = [];
 
   for (const file of sourceFiles) {
     debug(`Scanning file ${path.relative(rootDir, file.getFilePath())}`);
     const { nodes: fileNodes, routers: fileRouters } =
-      extractProceduresFromFile(file, rootDir, detection, debug);
+      extractProceduresFromFile(file, rootDir, detection, routerMounts, debug);
     nodes.push(...fileNodes);
     routers.push(...fileRouters);
   }
+
+  const routerPathMap = resolveRouterPaths(routers, routerMounts, debug);
+  nodes.forEach((node) => {
+    const mapped = routerPathMap.get(node.router);
+    if (mapped !== undefined && mapped !== "") node.router = mapped;
+  });
+  routers.forEach((router) => {
+    const mapped = routerPathMap.get(router.name);
+    if (mapped !== undefined && mapped !== "") router.name = mapped;
+  });
 
   const ctx: RuleContext = { rootDir, project, routerMeta: routers };
   const issues = applyRules(nodes, routers, ctx, trpcRules, trpcRouterRules);
@@ -87,6 +98,7 @@ function extractProceduresFromFile(
   sourceFile: SourceFile,
   rootDir: string,
   detection: ReturnType<typeof buildRouterDetectionConfig>,
+  routerMounts: RouterMountEdge[],
   debug: DebugLogger,
 ) {
   const nodes: TrpcProcedureNode[] = [];
@@ -95,7 +107,14 @@ function extractProceduresFromFile(
   const routerCalls = collectRouterCallSites(sourceFile, detection, debug);
 
   routerCalls.forEach(({ call, name }) => {
-    const router = parseRouter(call, name, rootDir, detection, debug);
+    const router = parseRouter(
+      call,
+      name,
+      rootDir,
+      detection,
+      routerMounts,
+      debug,
+    );
     if (!router) return;
 
     debug(
@@ -119,13 +138,20 @@ function parseRouter(
   routerName: string,
   rootDir: string,
   detection: ReturnType<typeof buildRouterDetectionConfig>,
+  routerMounts: RouterMountEdge[],
   debug: DebugLogger,
 ) {
   const routesArg = initializer.getArguments()[0];
   if (!routesArg || !Node.isObjectLiteralExpression(routesArg)) return null;
 
+  const routerDisplayName = deriveRouterPath(
+    routerName,
+    initializer.getSourceFile(),
+    rootDir,
+  );
+
   const routerMeta: TrpcRouterMeta = {
-    name: routerName,
+    name: routerDisplayName,
     file: path.relative(rootDir, initializer.getSourceFile().getFilePath()),
     line: initializer.getStartLineNumber(),
     linesOfCode:
@@ -148,6 +174,13 @@ function parseRouter(
     if (!initializerNode) continue;
 
     if (isRouterReference(initializerNode, detection)) {
+      const refName =
+        getRouterReferenceName(initializerNode) ?? initializerNode.getText();
+      routerMounts.push({
+        parent: routerDisplayName,
+        property: procedureName,
+        target: refName,
+      });
       debug(
         `Property '${procedureName}' in router '${routerName}' looks like a nested router; skipping composition`,
       );
@@ -157,7 +190,7 @@ function parseRouter(
     const procedureNode = parseProcedure(
       initializerNode,
       procedureName,
-      routerName,
+      routerDisplayName,
       rootDir,
       nameNode.getStartLineNumber(),
       debug,
@@ -308,4 +341,135 @@ function createDebugLogger(verbose?: boolean): DebugLogger {
     if (!verbose) return;
     console.log(`[trpc:debug] ${message}`);
   };
+}
+
+function getRouterReferenceName(node: Node): string | null {
+  if (Node.isIdentifier(node)) return node.getText();
+  if (Node.isPropertyAccessExpression(node)) {
+    const prop = node.getNameNode().getText();
+    const base = node.getExpression().getText();
+    return `${base}.${prop}`;
+  }
+  if (Node.isCallExpression(node)) {
+    const expr = node.getExpression();
+    if (Node.isIdentifier(expr)) return expr.getText();
+    if (Node.isPropertyAccessExpression(expr)) return expr.getText();
+  }
+  return null;
+}
+
+function resolveRouterPaths(
+  routers: TrpcRouterMeta[],
+  mounts: RouterMountEdge[],
+  debug: DebugLogger,
+) {
+  const byNormalized = new Map<string, string>();
+  routers.forEach((router) => {
+    const normalized = normalizeRouterName(router.name) || router.name;
+    byNormalized.set(normalized, router.name);
+  });
+
+  const incoming = new Map<string, RouterMountEdge[]>();
+  mounts.forEach((mount) => {
+    const candidates = [
+      normalizeRouterName(mount.target),
+      normalizeRouterName(mount.property),
+    ].filter(Boolean) as string[];
+
+    const targetName =
+      candidates.map((c) => byNormalized.get(c)).find(Boolean) ?? null;
+    const key = targetName ?? candidates[0];
+    if (!key) return;
+    const list = incoming.get(key) ?? [];
+    list.push(mount);
+    incoming.set(key, list);
+  });
+
+  const roots = new Set<string>();
+  routers.forEach((router) => {
+    const norm = normalizeRouterName(router.name) || router.name;
+    if (!incoming.has(router.name) && !incoming.has(norm)) {
+      roots.add(router.name);
+      roots.add(norm);
+    }
+  });
+
+  const resolved = new Map<string, string>();
+  const resolving = new Set<string>();
+
+  const resolve = (name: string): string => {
+    if (resolved.has(name)) return resolved.get(name)!;
+    if (resolving.has(name)) return name;
+    resolving.add(name);
+
+    const normalized = normalizeRouterName(name) || name;
+    const edges = incoming.get(name) ?? incoming.get(normalized) ?? [];
+    const edge = edges[0];
+    if (!edge) {
+      const base = roots.has(name) || roots.has(normalized) ? "" : name;
+      resolved.set(name, base);
+      resolving.delete(name);
+      return base;
+    }
+
+    const parentPath = resolve(edge.parent);
+    const path = parentPath ? `${parentPath}.${edge.property}` : edge.property;
+
+    resolved.set(name, path);
+    resolving.delete(name);
+    return path;
+  };
+
+  routers.forEach((router) => resolve(router.name));
+
+  debug(
+    `Router path map: ${Array.from(resolved.entries())
+      .map(([from, to]) => `${from}→${to}`)
+      .join(", ")}`,
+  );
+
+  return resolved;
+}
+
+interface RouterMountEdge {
+  parent: string;
+  property: string;
+  target: string;
+}
+
+function deriveRouterPath(
+  routerName: string,
+  sourceFile: SourceFile,
+  rootDir: string,
+) {
+  const fromName = normalizeRouterName(routerName);
+  if (fromName) return fromName;
+
+  const relativePath = path
+    .relative(rootDir, sourceFile.getFilePath())
+    .replace(/\\/g, "/");
+  const fileBase = path.basename(relativePath).replace(/\.[^.]+$/, "");
+  const fromFile = normalizeRouterName(fileBase);
+  if (fromFile) return fromFile;
+
+  const dirBase = path.basename(path.dirname(relativePath));
+  const fromDir = normalizeRouterName(dirBase);
+  if (fromDir) return fromDir;
+
+  return routerName;
+}
+
+function normalizeRouterName(value: string) {
+  const cleaned = value
+    .replace(/\.(router|trpc)$/i, "")
+    .replace(/^(create|build|make|use)/i, "")
+    .replace(/Router$/i, "")
+    .replace(/router$/i, "");
+
+  const stripped = cleaned.replace(/[.\-_]+(\w)/g, (_match, char: string) =>
+    char.toUpperCase(),
+  );
+
+  if (!stripped) return "";
+  return stripped[0].toLowerCase() + stripped.slice(1);
 }
