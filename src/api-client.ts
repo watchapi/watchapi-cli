@@ -1,4 +1,4 @@
-import { createTRPCClient, httpBatchLink } from "@trpc/client";
+import { createTRPCUntypedClient, httpBatchLink } from "@trpc/client";
 import type { Collection, PushPayload, Report } from "./types.js";
 
 type TrpcClient = {
@@ -12,7 +12,7 @@ export class ApiClient {
   constructor(apiUrl: string, apiToken: string) {
     const url = new URL("/api/trpc", apiUrl).toString();
 
-    this.client = createTRPCClient({
+    this.client = createTRPCUntypedClient({
       links: [
         httpBatchLink({
           url,
