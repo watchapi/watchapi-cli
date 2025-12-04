@@ -114,13 +114,15 @@ program
 
 program
   .command("sync")
-  .alias("push")
   .description("Sync API surface from code to the monitoring platform")
   .option("-t, --target <target>", "Adapter target", "trpc")
   .option("--root <path>", "Project root to scan", process.cwd())
   .option("--tsconfig <path>", "Path to tsconfig", "tsconfig.json")
   .option("--include <globs...>", "Glob(s) for router files")
-  .option("--prefix <path>", "Optional path prefix to prepend to synced endpoints")
+  .option(
+    "--prefix <path>",
+    "Optional path prefix to prepend to synced endpoints",
+  )
   .requiredOption(
     "--domain <url>",
     "Base domain to prepend to synced endpoints (e.g. https://api.example.com)",
