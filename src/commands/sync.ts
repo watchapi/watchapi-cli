@@ -9,6 +9,9 @@ import { runAnalyzer } from "../analyzer/index.js";
 import type { AnalyzerTarget, TrpcProcedureNode } from "../analyzer/types.js";
 import type { SyncApiDefinition } from "../types.js";
 
+const WATCHAPI_DASHBOARD_URL =
+  "https://watchapi.dev/signup?redirect=/app/profile";
+
 export interface SyncCommandOptions {
   target?: AnalyzerTarget;
   root?: string;
@@ -38,8 +41,18 @@ export async function syncCommand(options: SyncCommandOptions): Promise<void> {
 
   if (!apiToken) {
     console.error(
-      "Error: API token is required. Set WATCHAPI_TOKEN env var, use --api-token, or run watchapi login",
+      chalk.red(
+        "Login required. Set WATCHAPI_TOKEN, use --api-token, or run watchapi login.",
+      ),
     );
+    console.log("To continue:");
+    console.log(
+      `1) Visit ${WATCHAPI_DASHBOARD_URL} and sign in or create an account.`,
+    );
+    console.log("2) Generate an API token in the dashboard.");
+    console.log("3) Re-run with one of:");
+    console.log("   - npx watchapi@cli login --api-token <token>");
+    console.log("   - WATCHAPI_TOKEN=<token> npx watchapi@cli sync ...");
     process.exit(1);
   }
 
@@ -99,11 +112,11 @@ export async function syncCommand(options: SyncCommandOptions): Promise<void> {
       metadata: { rootDir },
     });
 
-    const syncMsg = `Sync completed (created: ${result.created ?? 0}, updated: ${
-      result.updated ?? 0
-    }, unchanged: ${result.unchanged ?? 0}, deactivated: ${
-      result.deactivated ?? 0
-    } [active state untouched])`;
+    const syncMsg = `Sync completed (created: ${
+      result.created ?? 0
+    }, updated: ${result.updated ?? 0}, unchanged: ${
+      result.unchanged ?? 0
+    }, deactivated: ${result.deactivated ?? 0} [active state untouched])`;
 
     if (spinner) {
       spinner.succeed(syncMsg);
@@ -167,7 +180,11 @@ function buildTrpcApiDefinitions(
   });
 }
 
-function buildFullPath(path: string, prefix: string | undefined, domain: string) {
+function buildFullPath(
+  path: string,
+  prefix: string | undefined,
+  domain: string,
+) {
   const cleanDomain = domain.replace(/\/+$/, "");
   const cleanPrefix = prefix ? prefix.replace(/^\/+|\/+$/g, "") : "";
   const cleanPath = path.replace(/^\/+/, "");

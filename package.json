@@ -1,6 +1,6 @@
 {
   "name": "@watchapi/cli",
-  "version": "0.2.7",
+  "version": "0.2.9",
   "description": "CLI tool for API monitoring and regression detection in CI/CD pipelines",
   "main": "dist/index.js",
   "bin": {
