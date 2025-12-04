@@ -123,7 +123,7 @@ program
     "--prefix <path>",
     "Optional path prefix to prepend to synced endpoints",
   )
-  .requiredOption(
+  .option(
     "--domain <url>",
     "Base domain to prepend to synced endpoints (e.g. https://api.example.com)",
   )

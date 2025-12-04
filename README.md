@@ -100,7 +100,7 @@ watchapi sync --root . --tsconfig tsconfig.json --domain https://api.example.com
 - `--root <path>` - Project root to scan (default: cwd)
 - `--tsconfig <path>` - Path to tsconfig (default: `tsconfig.json`)
 - `--include <globs...>` - Override glob(s) for router files
-- `--domain <url>` - **(Required)** Base domain to prepend to synced endpoint paths
+- `--domain <url>` - Optional Base domain to prepend to synced endpoint paths
 - `--prefix <path>` - Optional path prefix before the router/procedure (e.g., `api/trpc`)
 - `--api-url <url>` / `--api-token <token>` - Override platform connection
 - `--dry-run` - Print detected APIs without syncing
