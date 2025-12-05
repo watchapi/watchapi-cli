@@ -8,7 +8,7 @@
 
 CLI tool for API monitoring and regression detection in CI/CD pipelines.
 
-![watchapi CLI report table with validation info](./public/readme-screenshot.png)
+![Showcase Main](./public/readme-showcase-main.gif)
 
 ## Installation
 
@@ -282,6 +282,8 @@ Get your API token from the platform:
 - Check network connectivity from CI/CD to your APIs
 
 ## Analyzer-Only (tRPC) Quick Start
+
+![Showcase Analyzer](./public/readme-showcase-analyzer.gif)
 
 Need just the static analyzer? It works standalone—no account or token required.
 
