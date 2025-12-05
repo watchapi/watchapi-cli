@@ -9,8 +9,7 @@ import { runAnalyzer } from "../analyzer/index.js";
 import type { AnalyzerTarget, TrpcProcedureNode } from "../analyzer/types.js";
 import type { SyncApiDefinition } from "../types.js";
 
-const WATCHAPI_DASHBOARD_URL =
-  "https://watchapi.dev/signup?redirect=/app/profile";
+const WATCHAPI_DASHBOARD_URL = "https://watchapi.dev/app/profile";
 
 export interface SyncCommandOptions {
   target?: AnalyzerTarget;
