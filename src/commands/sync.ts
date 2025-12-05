@@ -18,7 +18,7 @@ export interface SyncCommandOptions {
   tsconfig?: string;
   include?: string[];
   prefix?: string;
-  domain: string;
+  domain?: string;
   apiUrl?: string;
   apiToken?: string;
   dryRun?: boolean;
@@ -74,7 +74,7 @@ export async function syncCommand(options: SyncCommandOptions): Promise<void> {
       target,
       analysis.nodes,
       options.prefix,
-      options.domain,
+      options.domain ?? "",
     );
     const foundMsg = `Found ${apis.length} API${
       apis.length === 1 ? "" : "s"
@@ -143,7 +143,7 @@ function buildApiDefinitions(
   target: AnalyzerTarget,
   nodes: TrpcProcedureNode[],
   prefix: string | undefined,
-  domain: string,
+  domain: string | undefined,
 ): SyncApiDefinition[] {
   if (target === "trpc") {
     return buildTrpcApiDefinitions(nodes, prefix, domain);
@@ -155,7 +155,7 @@ function buildApiDefinitions(
 function buildTrpcApiDefinitions(
   nodes: TrpcProcedureNode[],
   prefix: string | undefined,
-  domain: string,
+  domain: string | undefined,
 ): SyncApiDefinition[] {
   return nodes.map((node) => {
     const operationId = `${node.router}.${node.procedure}`;
@@ -183,9 +183,9 @@ function buildTrpcApiDefinitions(
 function buildFullPath(
   path: string,
   prefix: string | undefined,
-  domain: string,
+  domain: string | undefined,
 ) {
-  const cleanDomain = domain.replace(/\/+$/, "");
+  const cleanDomain = (domain ?? "").replace(/\/+$/, "");
   const cleanPrefix = prefix ? prefix.replace(/^\/+|\/+$/g, "") : "";
   const cleanPath = path.replace(/^\/+/, "");
   const segments = [cleanDomain];
