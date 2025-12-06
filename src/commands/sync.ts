@@ -162,6 +162,7 @@ function buildTrpcApiDefinitions(
     return {
       id: operationId,
       name: operationId,
+      sourceKey: `trpc:${operationId}`,
       method: node.method === "query" ? "GET" : "POST",
       router: node.router,
       procedure: node.procedure,

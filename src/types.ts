@@ -57,6 +57,7 @@ export const syncApiDefinitionSchema = z.object({
   id: z.string(),
   name: z.string(),
   method: z.string(),
+  sourceKey: z.string().optional(),
   router: z.string().optional(),
   procedure: z.string().optional(),
   path: z.string().optional(),
