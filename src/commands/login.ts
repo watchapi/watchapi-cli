@@ -22,7 +22,7 @@ export async function loginCommand(options: LoginOptions): Promise<void> {
 
   const apiUrl = (
     options.apiUrl ||
-    process.env.NEXT_PUBLIC_DOMAIN ||
+    process.env.WATCHAPI_URL ||
     DEFAULT_API_URL
   ).trim();
 

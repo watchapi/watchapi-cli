@@ -71,7 +71,7 @@ program
     const storedAuth = loadAuthConfig();
     const apiUrl =
       options.apiUrl ||
-      process.env.NEXT_PUBLIC_DOMAIN ||
+      process.env.WATCHAPI_URL ||
       storedAuth?.apiUrl ||
       DEFAULT_API_URL;
     const apiToken =
