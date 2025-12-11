@@ -88,15 +88,23 @@ watchapi check --collection abc123 --api-url https://api.example.com
 
 ### Sync Command
 
-Discover APIs from your codebase (tRPC for now) and sync them to the platform. Endpoints are matched by `method + URL`, updated when they already exist, and stale ones are left untouched.
+Discover APIs from your codebase (Next.js tRPC for now) and sync them to the platform. Endpoints are matched by `method + URL`, updated when they already exist, and stale ones are left untouched.
 
 ```bash
 watchapi sync --root . --tsconfig tsconfig.json --domain https://api.example.com --prefix api/trpc
 ```
 
+For Nest projects (OpenAPI 3.x), point to your schema file and switch targets (auto-detected when omitted):
+
+```bash
+watchapi sync --target nest --include openapi.yaml --prefix api
+```
+
+If you use the default Nest Swagger setup, omitting `--include` will try `api-json` first.
+
 **Options:**
 
-- `-t, --target <target>` - Adapter target (default: `trpc`)
+- `-t, --target <target>` - Adapter target (auto-detected when omitted; options: `next-trpc` | `nest`)
 - `--root <path>` - Project root to scan (default: cwd)
 - `--tsconfig <path>` - Path to tsconfig (default: `tsconfig.json`)
 - `--include <globs...>` - Override glob(s) for router files
@@ -105,6 +113,12 @@ watchapi sync --root . --tsconfig tsconfig.json --domain https://api.example.com
 - `--api-url <url>` / `--api-token <token>` - Override platform connection
 - `--dry-run` - Print detected APIs without syncing
 - `--router-factory` / `--router-identifier-pattern` - Customize tRPC detection
+
+If you omit `--target`, the CLI inspects `package.json` in your project root to decide:
+
+- Next.js + tRPC deps → `next-trpc`
+- NestJS + `@nestjs/swagger` deps → `nest`
+- Ambiguous/unknown → prompts you to pass `--target`
 
 ## CI/CD Integration
 
@@ -281,7 +295,7 @@ Get your API token from the platform:
 - Increase timeout in endpoint configuration on the platform
 - Check network connectivity from CI/CD to your APIs
 
-## Analyzer-Only (tRPC) Quick Start
+## Analyzer-Only (Next.js tRPC) Quick Start
 
 ![Showcase Analyzer](./public/readme-showcase-analyzer.gif)
 
@@ -293,6 +307,9 @@ npx @watchapi/cli analyze --root . --tsconfig tsconfig.json --include "src/serve
 
 # JSON output for CI/pipelines
 npx @watchapi/cli analyze --format json > trpc-analyzer-report.json
+
+# Analyze a Nest OpenAPI 3.x spec
+npx @watchapi/cli analyze --target nest --include openapi.yaml
 ```
 
 **Key flags:**
@@ -312,3 +329,4 @@ See `CONTRIBUTING.md` for a minimal setup and workflow guide.
 - Documentation: https://watchapi.dev/docs
 - Issues: https://github.com/watchapi/watchapi-cli/issues
 - Email: support@watchapi.dev
+- Discord: https://discord.gg/5bANxHbfNx
