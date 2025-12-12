@@ -100,14 +100,14 @@ For Nest projects (OpenAPI 3.x), point to your schema file and switch targets (a
 watchapi sync --target nest --include openapi.yaml --prefix api
 ```
 
-If you use the default Nest Swagger setup, omitting `--include` will try `api-json` first.
+If you use the default Nest Swagger setup, omitting `--include` will try `api-json` first. You can also pass an exported spec file or a URL, which lets you sync without running the Nest app locally (e.g., `watchapi sync --target nest --include docs/openapi.json` or `--include https://example.com/api-json`).
 
 **Options:**
 
 - `-t, --target <target>` - Adapter target (auto-detected when omitted; options: `next-trpc` | `nest`)
 - `--root <path>` - Project root to scan (default: cwd)
 - `--tsconfig <path>` - Path to tsconfig (default: `tsconfig.json`)
-- `--include <globs...>` - Override glob(s) for router files
+- `--include <globs...>` - Override glob(s) for router files or OpenAPI file/URL
 - `--domain <url>` - Optional Base domain to prepend to synced endpoint paths
 - `--prefix <path>` - Optional path prefix before the router/procedure (e.g., `api/trpc`)
 - `--api-url <url>` / `--api-token <token>` - Override platform connection
@@ -299,7 +299,7 @@ Get your API token from the platform:
 
 ![Showcase Analyzer](./public/readme-showcase-analyzer.gif)
 
-Need just the static analyzer? It works standalone—no account or token required.
+Need just the static analyzer? It works standalone:
 
 ```bash
 # Scan your project (table view)
