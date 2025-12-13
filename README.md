@@ -312,6 +312,14 @@ npx @watchapi/cli analyze --format json > trpc-analyzer-report.json
 npx @watchapi/cli analyze --target nest --include openapi.yaml
 ```
 
+**What `analyze` shows you (so you can spot issues early):**
+- Every detected API (method + path/procedure) for a quick surface audit.
+- Missing `operationId` values in OpenAPI specs to keep endpoint identity stable.
+- OpenAPI summaries, descriptions, and tags to validate documentation coverage.
+- tRPC metadata like visibility, resolver size, DB usage, error handling, and side effects to flag risky handlers.
+- tRPC quality signals: missing input schemas, implicit outputs, naming mismatches, DB calls without error handling, heavy resolvers, side-effectful queries, public sensitive mutations that should have auth/rate limiting, and oversized/singular routers.
+- File/line references for fast jump-to-definition in your editor.
+
 **Key flags:**
 
 - `--root` (default: cwd) project root to scan

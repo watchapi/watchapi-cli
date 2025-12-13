@@ -23,11 +23,14 @@ program
 
 program
   .command("analyze")
-  .description("Analyze tRPC routers for consistency and safety")
-  .option("-t, --target <target>", "Adapter target", "trpc")
+  .description("Analyze APIs (Next.js tRPC routers or Nest controllers) for consistency")
+  .option("-t, --target <target>", "Adapter target (auto-detects when omitted)")
   .option("--root <path>", "Project root to scan", process.cwd())
   .option("--tsconfig <path>", "Path to tsconfig", "tsconfig.json")
-  .option("--include <globs...>", "Glob(s) for router files")
+  .option(
+    "--include <globs...>",
+    "Glob(s) for router files or OpenAPI spec path/URL",
+  )
   .option("--format <format>", "Output format: table | json", "table")
   .option("-v, --verbose", "Enable verbose logging", false)
   .option(
@@ -114,11 +117,16 @@ program
 
 program
   .command("sync")
-  .description("Sync API surface from code to the monitoring platform")
-  .option("-t, --target <target>", "Adapter target", "trpc")
+  .description(
+    "Sync API surface from code or Nest OpenAPI specs to the monitoring platform",
+  )
+  .option("-t, --target <target>", "Adapter target (auto-detects when omitted)")
   .option("--root <path>", "Project root to scan", process.cwd())
   .option("--tsconfig <path>", "Path to tsconfig", "tsconfig.json")
-  .option("--include <globs...>", "Glob(s) for router files")
+  .option(
+    "--include <globs...>",
+    "Glob(s) for router files or OpenAPI spec path/URL",
+  )
   .option(
     "--prefix <path>",
     "Optional path prefix to prepend to synced endpoints",

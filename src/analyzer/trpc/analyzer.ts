@@ -88,6 +88,7 @@ export async function analyzeTrpc(
   const issues = applyRules(nodes, routers, ctx, trpcRules, trpcRouterRules);
 
   return {
+    target: "next-trpc",
     issues,
     summary: buildSummary(issues),
     nodes,

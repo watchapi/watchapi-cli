@@ -6,7 +6,13 @@ import ora from "ora";
 import { ApiClient } from "../api-client.js";
 import { DEFAULT_API_URL, loadAuthConfig } from "../auth-config.js";
 import { runAnalyzer } from "../analyzer/index.js";
-import type { AnalyzerTarget, TrpcProcedureNode } from "../analyzer/types.js";
+import { detectTarget } from "../detect-target.js";
+import type {
+  AnalyzerNode,
+  AnalyzerTarget,
+  OpenApiOperationNode,
+  TrpcProcedureNode,
+} from "../analyzer/types.js";
 import type { SyncApiDefinition } from "../types.js";
 
 const WATCHAPI_DASHBOARD_URL = "https://watchapi.dev/app/profile";
@@ -27,8 +33,9 @@ export interface SyncCommandOptions {
 }
 
 export async function syncCommand(options: SyncCommandOptions): Promise<void> {
-  const target: AnalyzerTarget = options.target ?? "trpc";
   const rootDir = path.resolve(options.root ?? process.cwd());
+  const detected = options.target ? null : await detectTarget(rootDir);
+  const target: AnalyzerTarget = options.target ?? detected!.target;
   const storedAuth = loadAuthConfig();
   const apiUrl =
     options.apiUrl ||
@@ -56,9 +63,14 @@ export async function syncCommand(options: SyncCommandOptions): Promise<void> {
   }
 
   const spinner = options.verbose ? null : ora("Discovering APIs...").start();
+  if (options.verbose && detected) {
+    console.log(
+      chalk.gray(`Auto-detected target: ${target} (${detected.reason})`),
+    );
+  }
 
   try {
-    const analysis = await runAnalyzer({
+  const analysis = await runAnalyzer({
       rootDir,
       target,
       tsconfigPath: options.tsconfig,
@@ -69,12 +81,7 @@ export async function syncCommand(options: SyncCommandOptions): Promise<void> {
       routerIdentifierPattern: options.routerIdentifierPattern,
     });
 
-    const apis = buildApiDefinitions(
-      target,
-      analysis.nodes,
-      options.prefix,
-      options.domain ?? "",
-    );
+    const apis = buildApiDefinitions(target, analysis.nodes, options.prefix, options.domain ?? "");
     const foundMsg = `Found ${apis.length} API${
       apis.length === 1 ? "" : "s"
     } from ${target}`;
@@ -140,12 +147,16 @@ export async function syncCommand(options: SyncCommandOptions): Promise<void> {
 
 function buildApiDefinitions(
   target: AnalyzerTarget,
-  nodes: TrpcProcedureNode[],
+  nodes: AnalyzerNode[],
   prefix: string | undefined,
   domain: string | undefined,
 ): SyncApiDefinition[] {
-  if (target === "trpc") {
-    return buildTrpcApiDefinitions(nodes, prefix, domain);
+  if (target === "next-trpc") {
+    return buildTrpcApiDefinitions(nodes as TrpcProcedureNode[], prefix, domain);
+  }
+
+  if (target === "nest") {
+    return buildNestApiDefinitions(nodes as OpenApiOperationNode[], prefix, domain);
   }
 
   throw new Error(`Unsupported sync target: ${target}`);
@@ -162,7 +173,7 @@ function buildTrpcApiDefinitions(
     return {
       id: operationId,
       name: operationId,
-      sourceKey: `trpc:${operationId}`,
+      sourceKey: `next-trpc:${operationId}`,
       method: node.method === "query" ? "GET" : "POST",
       router: node.router,
       procedure: node.procedure,
@@ -177,6 +188,32 @@ function buildTrpcApiDefinitions(
         hasSideEffects: node.hasSideEffects,
       },
     };
+  });
+}
+
+function buildNestApiDefinitions(
+  nodes: OpenApiOperationNode[],
+  prefix: string | undefined,
+  domain: string | undefined,
+): SyncApiDefinition[] {
+  return nodes.map((node) => {
+    const path = buildFullPath(node.path, prefix, domain);
+    return {
+      id: node.operationId,
+      name: node.summary ?? node.operationId,
+      sourceKey: `nest:${node.operationId}`,
+      method: node.method,
+      router: node.tags?.[0],
+      procedure: node.operationId,
+      path,
+      file: node.file,
+      line: node.line,
+      metadata: {
+        tags: node.tags,
+        summary: node.summary,
+        description: node.description,
+      },
+    } satisfies SyncApiDefinition;
   });
 }
 

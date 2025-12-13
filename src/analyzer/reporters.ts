@@ -7,6 +7,9 @@ export function printReport(
   result: AnalyzerResult,
   format: "table" | "json" = "table",
 ) {
+  const label =
+    result.target === "nest" ? "Nest analyzer" : "Next.js tRPC analyzer";
+
   if (format === "json") {
     const payload = { summary: result.summary, issues: result.issues };
     console.log(JSON.stringify(payload, null, 2));
@@ -14,13 +17,13 @@ export function printReport(
   }
 
   if (!result.issues.length) {
-    console.log(chalk.green("✓ tRPC analyzer — no issues found."));
+    console.log(chalk.green(`✓ ${label} — no issues found.`));
     return;
   }
 
   console.log(
     chalk.bold(
-      `tRPC analyzer — ${result.issues.length} finding${
+      `${label} — ${result.issues.length} finding${
         result.issues.length === 1 ? "" : "s"
       }`,
     ),
@@ -38,8 +41,8 @@ function renderTable(issues: AnalyzerIssue[]) {
   const tableConfig: ConstructorParameters<typeof Table>[0] = {
     head: [
       chalk.bold("Severity"),
-      chalk.bold("Router"),
-      chalk.bold("Procedure"),
+      chalk.bold("Router/Path"),
+      chalk.bold("Procedure/Method"),
       chalk.bold("Message"),
       chalk.bold("Location"),
       chalk.bold("Rule"),

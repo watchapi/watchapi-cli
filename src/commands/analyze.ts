@@ -9,6 +9,7 @@ import {
   type AnalyzerOptions,
   type AnalyzerTarget,
 } from "../analyzer/index.js";
+import { detectTarget } from "../detect-target.js";
 
 export interface AnalyzeCommandOptions {
   target?: AnalyzerTarget;
@@ -25,10 +26,20 @@ export async function analyzeCommand(
   options: AnalyzeCommandOptions,
 ): Promise<void> {
   const rootDir = path.resolve(options.root ?? process.cwd());
-  const target: AnalyzerTarget = options.target ?? "trpc";
+  const detected = options.target ? null : await detectTarget(rootDir);
+  const target: AnalyzerTarget = options.target ?? detected!.target;
   const format: NonNullable<AnalyzerOptions["format"]> =
     options.format === "json" ? "json" : "table";
-  const spinner = options.verbose ? null : ora("Analyzing tRPC procedures...").start();
+  const spinnerLabel =
+    target === "nest"
+      ? "Analyzing Nest controllers..."
+      : "Analyzing Next.js tRPC procedures...";
+  if (options.verbose && detected) {
+    console.log(
+      chalk.gray(`Auto-detected target: ${target} (${detected.reason})`),
+    );
+  }
+  const spinner = options.verbose ? null : ora(spinnerLabel).start();
 
   try {
     const result = await runAnalyzer({

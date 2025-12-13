@@ -1,6 +1,6 @@
 import type { Project } from "ts-morph";
 
-export type AnalyzerTarget = "trpc";
+export type AnalyzerTarget = "next-trpc" | "nest";
 
 export type Severity = "info" | "warn" | "error";
 
@@ -20,11 +20,18 @@ export interface AnalyzerSummary {
   error: number;
 }
 
-export interface AnalyzerResult {
+export type AnalyzerNode = TrpcProcedureNode | OpenApiOperationNode;
+
+export interface AnalyzerResultBase<TNode extends AnalyzerNode> {
+  target: AnalyzerTarget;
   issues: AnalyzerIssue[];
   summary: AnalyzerSummary;
-  nodes: TrpcProcedureNode[];
+  nodes: TNode[];
 }
+
+export type AnalyzerResult =
+  | (AnalyzerResultBase<TrpcProcedureNode> & { target: "next-trpc" })
+  | (AnalyzerResultBase<OpenApiOperationNode> & { target: "nest" });
 
 export interface AnalyzerOptions {
   rootDir: string;
@@ -57,6 +64,17 @@ export interface TrpcProcedureNode {
   usesDb: boolean;
   hasErrorHandling: boolean;
   hasSideEffects: boolean;
+}
+
+export interface OpenApiOperationNode {
+  path: string;
+  method: string;
+  operationId: string;
+  summary?: string;
+  description?: string;
+  tags?: string[];
+  file: string;
+  line: number;
 }
 
 export interface TrpcRouterMeta {
