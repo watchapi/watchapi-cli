@@ -10,6 +10,7 @@ import { detectTarget } from "../detect-target.js";
 import type {
   AnalyzerNode,
   AnalyzerTarget,
+  NextRouteNode,
   OpenApiOperationNode,
   TrpcProcedureNode,
 } from "../analyzer/types.js";
@@ -155,6 +156,10 @@ function buildApiDefinitions(
     return buildTrpcApiDefinitions(nodes as TrpcProcedureNode[], prefix, domain);
   }
 
+  if (target === "next-app-router") {
+    return buildNextAppDefinitions(nodes as NextRouteNode[], prefix, domain);
+  }
+
   if (target === "nest") {
     return buildNestApiDefinitions(nodes as OpenApiOperationNode[], prefix, domain);
   }
@@ -212,6 +217,37 @@ function buildNestApiDefinitions(
         tags: node.tags,
         summary: node.summary,
         description: node.description,
+      },
+    } satisfies SyncApiDefinition;
+  });
+}
+
+function buildNextAppDefinitions(
+  nodes: NextRouteNode[],
+  prefix: string | undefined,
+  domain: string | undefined,
+): SyncApiDefinition[] {
+  return nodes.map((node) => {
+    const operationId = `${node.method} ${node.path}`;
+    const path = buildFullPath(node.path, prefix, domain);
+    return {
+      id: operationId,
+      name: operationId,
+      sourceKey: `next-app-router:${operationId}`,
+      method: node.method,
+      router: node.path,
+      procedure: node.method,
+      path,
+      file: node.file,
+      line: node.line,
+      metadata: {
+        handler: node.handlerName,
+        handlerLines: node.handlerLines,
+        usesDb: node.usesDb,
+        hasErrorHandling: node.hasErrorHandling,
+        hasSideEffects: node.hasSideEffects,
+        returnsJson: node.returnsJson,
+        analyzed: node.analyzed,
       },
     } satisfies SyncApiDefinition;
   });

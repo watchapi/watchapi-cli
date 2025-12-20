@@ -8,7 +8,11 @@ export function printReport(
   format: "table" | "json" = "table",
 ) {
   const label =
-    result.target === "nest" ? "Nest analyzer" : "Next.js tRPC analyzer";
+    result.target === "nest"
+      ? "Nest analyzer"
+      : result.target === "next-app-router"
+        ? "Next.js App Router analyzer"
+        : "Next.js tRPC analyzer";
 
   if (format === "json") {
     const payload = { summary: result.summary, issues: result.issues };

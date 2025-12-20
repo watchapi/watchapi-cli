@@ -33,7 +33,9 @@ export async function analyzeCommand(
   const spinnerLabel =
     target === "nest"
       ? "Analyzing Nest controllers..."
-      : "Analyzing Next.js tRPC procedures...";
+      : target === "next-app-router"
+        ? "Analyzing Next.js App Router handlers..."
+        : "Analyzing Next.js tRPC procedures...";
   if (options.verbose && detected) {
     console.log(
       chalk.gray(`Auto-detected target: ${target} (${detected.reason})`),

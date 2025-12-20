@@ -295,7 +295,7 @@ Get your API token from the platform:
 - Increase timeout in endpoint configuration on the platform
 - Check network connectivity from CI/CD to your APIs
 
-## Analyzer-Only (Next.js tRPC) Quick Start
+## Analyzer-Only Quick Start
 
 ![Showcase Analyzer](./public/readme-showcase-analyzer.gif)
 
@@ -308,8 +308,30 @@ npx @watchapi/cli analyze --root . --tsconfig tsconfig.json --include "src/serve
 # JSON output for CI/pipelines
 npx @watchapi/cli analyze --format json > trpc-analyzer-report.json
 
+# Scan Next.js App Router route handlers
+npx @watchapi/cli analyze --target next-app-router --include "app/api/**/route.{ts,tsx}"
+
 # Analyze a Nest OpenAPI 3.x spec
 npx @watchapi/cli analyze --target nest --include openapi.yaml
+```
+
+Programmatic API:
+
+```ts
+import {
+  detectTargets,
+  getNextAppRoutes,
+  getNextTrpcProcedures,
+  getNestOperations,
+} from "@watchapi/cli";
+
+// Detect frameworks present in a repo
+const detected = await detectTargets();
+
+// Get typed route/procedure lists without the CLI
+const appRoutes = await getNextAppRoutes({ rootDir: "/path/to/app" });
+const trpcProcedures = await getNextTrpcProcedures({ rootDir: "/path/to/app" });
+const nestOperations = await getNestOperations({ include: ["openapi.yaml"] });
 ```
 
 **What `analyze` shows you (so you can spot issues early):**
@@ -317,6 +339,7 @@ npx @watchapi/cli analyze --target nest --include openapi.yaml
 - Missing `operationId` values in OpenAPI specs to keep endpoint identity stable.
 - OpenAPI summaries, descriptions, and tags to validate documentation coverage.
 - tRPC metadata like visibility, resolver size, DB usage, error handling, and side effects to flag risky handlers.
+- Next.js App Router handler metadata: method/path derivation, handler length, DB usage, error handling, side effects, and response-shape hints.
 - tRPC quality signals: missing input schemas, implicit outputs, naming mismatches, DB calls without error handling, heavy resolvers, side-effectful queries, public sensitive mutations that should have auth/rate limiting, and oversized/singular routers.
 - File/line references for fast jump-to-definition in your editor.
 
@@ -327,6 +350,7 @@ npx @watchapi/cli analyze --target nest --include openapi.yaml
 - `--include` glob(s) to target router/procedure files
 - `--format table|json` choose console table or machine-readable JSON
 - `--router-factory` / `--router-identifier-pattern` override router detection if you use custom helpers
+- `--target next-trpc|next-app-router|nest` force a specific analyzer target (auto-detected when possible)
 
 ## Contributing
 

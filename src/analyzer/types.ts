@@ -1,6 +1,6 @@
 import type { Project } from "ts-morph";
 
-export type AnalyzerTarget = "next-trpc" | "nest";
+export type AnalyzerTarget = "next-trpc" | "next-app-router" | "nest";
 
 export type Severity = "info" | "warn" | "error";
 
@@ -20,7 +20,7 @@ export interface AnalyzerSummary {
   error: number;
 }
 
-export type AnalyzerNode = TrpcProcedureNode | OpenApiOperationNode;
+export type AnalyzerNode = TrpcProcedureNode | OpenApiOperationNode | NextRouteNode;
 
 export interface AnalyzerResultBase<TNode extends AnalyzerNode> {
   target: AnalyzerTarget;
@@ -31,6 +31,7 @@ export interface AnalyzerResultBase<TNode extends AnalyzerNode> {
 
 export type AnalyzerResult =
   | (AnalyzerResultBase<TrpcProcedureNode> & { target: "next-trpc" })
+  | (AnalyzerResultBase<NextRouteNode> & { target: "next-app-router" })
   | (AnalyzerResultBase<OpenApiOperationNode> & { target: "nest" });
 
 export interface AnalyzerOptions {
@@ -82,6 +83,20 @@ export interface TrpcRouterMeta {
   file: string;
   line: number;
   linesOfCode: number;
+}
+
+export interface NextRouteNode {
+  path: string;
+  method: string;
+  handlerName: string;
+  handlerLines: number;
+  usesDb: boolean;
+  hasErrorHandling: boolean;
+  hasSideEffects: boolean;
+  returnsJson: boolean;
+  analyzed: boolean;
+  file: string;
+  line: number;
 }
 
 export interface RuleContext {

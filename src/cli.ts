@@ -23,7 +23,9 @@ program
 
 program
   .command("analyze")
-  .description("Analyze APIs (Next.js tRPC routers or Nest controllers) for consistency")
+  .description(
+    "Analyze APIs (Next.js App Router, Next.js tRPC, or Nest controllers) for consistency",
+  )
   .option("-t, --target <target>", "Adapter target (auto-detects when omitted)")
   .option("--root <path>", "Project root to scan", process.cwd())
   .option("--tsconfig <path>", "Path to tsconfig", "tsconfig.json")
@@ -118,7 +120,7 @@ program
 program
   .command("sync")
   .description(
-    "Sync API surface from code or Nest OpenAPI specs to the monitoring platform",
+    "Sync API surface from code (Next.js App Router/tRPC) or Nest OpenAPI specs to the monitoring platform",
   )
   .option("-t, --target <target>", "Adapter target (auto-detects when omitted)")
   .option("--root <path>", "Project root to scan", process.cwd())

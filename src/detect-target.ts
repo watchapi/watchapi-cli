@@ -23,6 +23,14 @@ const detectors: Detector[] = [
       hasAny(pkg, ["@trpc/server", "@trpc/next", "@trpc/client"]),
   },
   {
+    target: "next-app-router",
+    reason: "found Next.js app router (no tRPC)",
+    matches: (pkg) =>
+      hasAny(pkg, ["next"]) &&
+      !hasAny(pkg, ["@trpc/server", "@trpc/next", "@trpc/client"]) &&
+      !hasAny(pkg, ["@nestjs/core", "@nestjs/common"]),
+  },
+  {
     target: "nest",
     reason: "found NestJS with @nestjs/swagger",
     matches: (pkg) =>
@@ -36,7 +44,28 @@ export interface DetectedTarget {
   reason: string;
 }
 
-export async function detectTarget(rootDir: string): Promise<DetectedTarget> {
+export async function detectTarget(rootDir: string = process.cwd()): Promise<DetectedTarget> {
+  const matches = await detectTargets(rootDir);
+
+  if (matches.length === 1) {
+    return matches[0];
+  }
+
+  if (matches.length > 1) {
+    const labels = matches.map((match) => match.target).join(", ");
+    throw new Error(
+      `Multiple possible targets detected (${labels}). Please specify --target explicitly.`,
+    );
+  }
+
+  throw new Error(
+    "Unable to auto-detect target. Please add supported dependencies or specify --target (next-trpc | next-app-router | nest).",
+  );
+}
+
+export async function detectTargets(
+  rootDir: string = process.cwd(),
+): Promise<DetectedTarget[]> {
   const pkgPath = path.join(rootDir, "package.json");
   let pkg: PackageJsonLike;
 
@@ -51,23 +80,9 @@ export async function detectTarget(rootDir: string): Promise<DetectedTarget> {
     );
   }
 
-  const matches = detectors.filter((detector) => detector.matches(pkg));
-
-  if (matches.length === 1) {
-    const match = matches[0];
-    return { target: match.target, reason: match.reason };
-  }
-
-  if (matches.length > 1) {
-    const labels = matches.map((match) => match.target).join(", ");
-    throw new Error(
-      `Multiple possible targets detected (${labels}). Please specify --target explicitly.`,
-    );
-  }
-
-  throw new Error(
-    "Unable to auto-detect target. Please add supported dependencies or specify --target (next-trpc | nest).",
-  );
+  return detectors
+    .filter((detector) => detector.matches(pkg))
+    .map((match) => ({ target: match.target, reason: match.reason }));
 }
 
 function hasAny(pkg: PackageJsonLike, candidates: string[]) {
